@@ -143,13 +143,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="dll\Shaders\cube.frag" />
-    <None Include="dll\Shaders\cube.geom" />
-    <None Include="dll\Shaders\cube.vert" />
     <None Include="dll\Shaders\normal.frag" />
     <None Include="dll\Shaders\normal.geom" />
     <None Include="dll\Shaders\normal.vert" />
     <None Include="dll\Shaders\Umbreon.frag" />
+    <None Include="dll\Shaders\Umbreon.geom" />
     <None Include="dll\Shaders\Umbreon.vert" />
   </ItemGroup>
   <ItemGroup>

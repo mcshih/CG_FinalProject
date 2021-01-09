@@ -14,22 +14,32 @@ out vec4 color;
 
 void triangle(int index)
 {
-    vec4 drop = vec4(gs_in[index].normal.x, gs_in[index].normal.y-falling, gs_in[index].normal.z, 0.0f) * 0.2 * tc;
-    //vec4 drop_1 = vec4(gs_in[index].normal.x, gs_in[index].normal.y-falling-0.5, gs_in[index].normal.z, 0.0f) * 0.2 * tc;
+    float timer = tc;
+    vec4 drop = vec4(gs_in[index].normal.x, gs_in[index].normal.y+falling, gs_in[index].normal.z, 0.0f) * 0.5;
+    if(falling != 0){
+        drop *= falling;
+        timer = 3.1425;
+    }
 
     color=vec4(0.0,0.0,1.0,1.0);
-    //gl_Position = gl_in[index].gl_Position + vec4(gs_in[index].normal, 0.0f) * 0.2;
-    gl_Position = gl_in[index].gl_Position + drop;
+    gl_Position = gl_in[index].gl_Position + drop*sin(timer);
+    if(gl_Position.y < -5){
+        gl_Position.y = -5 + sin(timer);
+    }
     EmitVertex();
     
     color=vec4(0.0,1.0,0.0,1.0);
-    //gl_Position = gl_in[index+1].gl_Position + vec4(gs_in[index+1].normal, 0.0f) * 0.2;
-    gl_Position = gl_in[index+1].gl_Position + drop;
+    gl_Position = gl_in[index+1].gl_Position + drop*sin(timer);
+    if(gl_Position.y < -5){
+        gl_Position.y = -5 + sin(timer);
+    }
     EmitVertex();
 
     color=vec4(1.0,0.0,0.0,1.0);
-    //gl_Position = gl_in[index+2].gl_Position + vec4(gs_in[index+2].normal, 0.0f) * 0.2;
-    gl_Position = gl_in[index+2].gl_Position + drop;
+    gl_Position = gl_in[index+2].gl_Position + drop*sin(timer);
+    if(gl_Position.y < -5){
+        gl_Position.y = -5 + sin(timer);
+    }
     EmitVertex();
     
     EndPrimitive();

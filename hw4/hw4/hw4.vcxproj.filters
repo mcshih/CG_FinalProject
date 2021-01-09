@@ -20,9 +20,7 @@
     <None Include="dll\Shaders\normal.vert" />
     <None Include="dll\Shaders\Umbreon.frag" />
     <None Include="dll\Shaders\Umbreon.vert" />
-    <None Include="dll\Shaders\cube.frag" />
-    <None Include="dll\Shaders\cube.geom" />
-    <None Include="dll\Shaders\cube.vert" />
+    <None Include="dll\Shaders\Umbreon.geom" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">

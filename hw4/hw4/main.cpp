@@ -27,50 +27,16 @@ void LoadTexture(unsigned int&, const char*);
 //
 void DrawBall();
 float BallPos = 5.0f;
-void DrawCube(GLuint);
+void DrawBasis();
+const double PI = 3.1415926535898;
+/*  Macro for sin & cos in degrees */
+#define Cos(th) cos(PI/180*(th))
+#define Sin(th) sin(PI/180*(th))
 
-static const GLfloat g_vertex_buffer_data[] = {
-	-1.0f,-1.0f,-1.0f, // triangle 1 : begin
-	-1.0f,-1.0f, 1.0f,
-	-1.0f, 1.0f, 1.0f, // triangle 1 : end
-	1.0f, 1.0f,-1.0f, // triangle 2 : begin
-	-1.0f,-1.0f,-1.0f,
-	-1.0f, 1.0f,-1.0f, // triangle 2 : end
-	1.0f,-1.0f, 1.0f,
-	-1.0f,-1.0f,-1.0f,
-	1.0f,-1.0f,-1.0f,
-	1.0f, 1.0f,-1.0f,
-	1.0f,-1.0f,-1.0f,
-	-1.0f,-1.0f,-1.0f,
-	-1.0f,-1.0f,-1.0f,
-	-1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f,-1.0f,
-	1.0f,-1.0f, 1.0f,
-	-1.0f,-1.0f, 1.0f,
-	-1.0f,-1.0f,-1.0f,
-	-1.0f, 1.0f, 1.0f,
-	-1.0f,-1.0f, 1.0f,
-	1.0f,-1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f,-1.0f,-1.0f,
-	1.0f, 1.0f,-1.0f,
-	1.0f,-1.0f,-1.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f,-1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f, 1.0f,-1.0f,
-	-1.0f, 1.0f,-1.0f,
-	1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f,-1.0f,
-	-1.0f, 1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f, 1.0f,
-	1.0f,-1.0f, 1.0f
-};
 
 GLuint Normalprogram, Umbreonprogram, Cubeprogram;
 GLuint VAO, VBO[3], vao_cube, vbo_cube;
-unsigned int modeltexture, basistexture;
+unsigned int modeltexture, basistexture, bumptexture;
 float windowSize[2] = { 600, 600 };
 float angle = 0.0f;
 float angle_ball = 0.0f;
@@ -107,13 +73,9 @@ void shaderInit() {
 	Normalprogram = createProgram(vert, goem, frag);
 
 	vert = createShader("Shaders/Umbreon.vert", "vertex");
+	goem = createShader("Shaders/Umbreon.geom", "geometry");
 	frag = createShader("Shaders/Umbreon.frag", "fragment");
-	Umbreonprogram = createProgram(vert, 0, frag);
-
-	vert = createShader("Shaders/cube.vert", "vertex");
-	goem = createShader("Shaders/cube.geom", "geometry");
-	frag = createShader("Shaders/cube.frag", "fragment");
-	Cubeprogram = createProgram(vert, goem, frag);
+	Umbreonprogram = createProgram(vert, goem, frag);
 }
 
 void bindbufferInit() {
@@ -139,23 +101,12 @@ void bindbufferInit() {
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-
-	//
-	glGenVertexArrays(1, &vao_cube);
-	glGenBuffers(1, &vbo_cube);
-	glBindVertexArray(vao_cube);
-
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_cube);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
 }
 
 void textureInit() {
 	LoadTexture(basistexture, "basis.jpg");
 	LoadTexture(modeltexture, "Umbreon.jpg");
+	LoadTexture(bumptexture, "bump.jpg");
 }
 
 glm::mat4 getV()
@@ -183,15 +134,20 @@ void display() {
 	glDepthFunc(GL_LEQUAL);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	glPushMatrix();
+	//DrawBasis();
+
 	DrawUmbreon(Normalprogram);
 	DrawUmbreon(Umbreonprogram);
 
 	DrawBall();
-	DrawCube(Cubeprogram);
+	glPopMatrix();
 
-	time_counter += 0.01;
+	if (time_counter > 0) {
+		time_counter += 0.01;
+	}
 	if (rotation) {
-		//angle += 0.2;
+		angle += 0.2;
 		angle_ball += 0.2;
 		if (angle > 360) {
 			angle -= 360;
@@ -266,7 +222,7 @@ void keyboard(unsigned char key, int x, int y) {
 	case 'r':
 	{
 		//WorldCamPos = glm::vec3(7.5 , 5.0, 7.5);
-		time_counter = 0.0f;
+		time_counter = 0.1f;
 		break;
 	}
 	case 'z':
@@ -289,7 +245,7 @@ void DrawUmbreon(GLuint program)
 	glUseProgram(program);
 
 	glm::mat4 M(1.0f);
-	M = glm::rotate(M, glm::radians(angle), glm::vec3(0, 1, 0));
+	//M = glm::rotate(M, glm::radians(angle), glm::vec3(0, 1, 0));
 	//M = glm::translate(M, glm::vec3(0, 0, 0));
 
 	GLuint ModelMatrixID = glGetUniformLocation(program, "M");
@@ -305,17 +261,42 @@ void DrawUmbreon(GLuint program)
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, modeltexture);
-	glUniform1i(glGetUniformLocation(program, "texture"), 0);
+	glUniform1i(glGetUniformLocation(program, "Texture"), 0);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, bumptexture);
+	glUniform1i(glGetUniformLocation(program, "normalMap"), 0);
+
+	GLint lightColorLoc = glGetUniformLocation(program, "lightColor");
+	GLint lightPosLoc = glGetUniformLocation(program, "lightPos");
+	GLint viewPosLoc = glGetUniformLocation(program, "viewPos");
+	GLint LaLoc = glGetUniformLocation(program, "ambientIntensity");
+	GLint LdLoc = glGetUniformLocation(program, "diffuseIntensity");
+	GLint LsLoc = glGetUniformLocation(program, "specularIntensity");
+	GLint KaLoc = glGetUniformLocation(program, "Ka");
+	GLint KdLoc = glGetUniformLocation(program, "Kd");
+	GLint KsLoc = glGetUniformLocation(program, "Ks");
+	GLint glossLoc = glGetUniformLocation(program, "gloss");
+	glUniform3f(lightColorLoc, 1.0f, 1.0f, 1.0f);
+	glUniform3f(lightPosLoc, WorldLightPos.x, WorldLightPos.y, WorldLightPos.z);
+	glUniform3f(viewPosLoc, WorldCamPos.x, WorldCamPos.y, WorldCamPos.z);
+	glUniform3f(KaLoc, 1.0f, 1.0f, 1.0f);
+	glUniform3f(KdLoc, 1.0f, 1.0f, 1.0f);
+	glUniform3f(KsLoc, 1.0f, 1.0f, 1.0f);
+	glUniform3f(LaLoc, 0.2f, 0.2f, 0.2f);
+	glUniform3f(LdLoc, 0.8f, 0.8f, 0.8f);
+	glUniform3f(LsLoc, 0.5f, 0.5f, 0.5f);
+	glUniform1f(glossLoc, 25);
 
 	GLint nlLoc = glGetUniformLocation(program, "tc");
 	float explo = time_counter - 40;
 	if (time_counter * 0.1 < 4) {
 		explo = 1.0f;
 	}
-	glUniform1f(nlLoc, explo);
+	glUniform1f(nlLoc, time_counter);
 	
 	GLint flLoc = glGetUniformLocation(program, "falling");
-	float fall = (time_counter -40)*0.2;
+	float fall = (time_counter - 40);
 	if (time_counter * 0.1 < 4) {
 		fall = 0.0f;
 	}
@@ -360,36 +341,40 @@ void DrawBall() {
 	gluQuadricDrawStyle(quadric, GLU_FILL);
 	gluQuadricNormals(quadric, GLU_SMOOTH);
 	gluQuadricTexture(quadric, GL_TRUE);
+	glColor3f(1.0f, 1.0f, 1.0f);
 	gluSphere(quadric, 1.0, 20, 20);
 	gluDeleteQuadric(quadric);
 	glActiveTexture(0);
 	glPopMatrix();
 }
 
-void DrawCube(GLuint program) {
-	glUseProgram(program);
+void DrawBasis()
+{
+	// viewport transformation
+	glViewport(0, 0, windowSize[0], windowSize[1]);
 
-	glm::mat4 M(1.0f);
-	M = glm::rotate(M, glm::radians(angle), glm::vec3(0, 1, 0));
+	// projection transformation
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(60.0, (GLfloat)windowSize[0] / (GLfloat)windowSize[1], 1.0, 1000.0);
 
-	GLuint ModelMatrixID = glGetUniformLocation(program, "M");
-	glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &M[0][0]);
+	// viewing and modeling transformation
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluLookAt(WorldCamPos.x, WorldCamPos.y, WorldCamPos.z,
+		0, 0, 0,
+		0, 1, 0);
 
-	glm::mat4 V = getV();
-	ModelMatrixID = glGetUniformLocation(program, "V");
-	glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &V[0][0]);
-
-	glm::mat4 P = getP();
-	ModelMatrixID = glGetUniformLocation(program, "P");
-	glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &P[0][0]);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, basistexture);
-	glUniform1i(glGetUniformLocation(program, "texture"), 0);
-
-	glBindVertexArray(vao_cube);
-	glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
-	glBindVertexArray(0);
-	glActiveTexture(0);
-	glUseProgram(0);
+	glPushMatrix();
+	glBegin(GL_QUADS);
+	glColor3f(1.0f, 0.0f, 0.0f);
+	glVertex3f(-5.0f, 5.0f, -5.0f);
+	glColor3f(1.0f, 0.0f, 0.0f);
+	glVertex3f(5.0f, 5.0f, -5.0f);
+	glColor3f(1.0f, 0.0f, 0.0f);
+	glVertex3f(5.0f, 5.0f, 5.0f);
+	glColor3f(1.0f, 0.0f, 0.0f);
+	glVertex3f(-5.0f, 5.0f, 5.0f);
+	glEnd();
+	glPopMatrix();
 }
