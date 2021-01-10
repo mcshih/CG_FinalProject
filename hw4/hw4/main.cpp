@@ -106,7 +106,7 @@ void bindbufferInit() {
 void textureInit() {
 	LoadTexture(basistexture, "basis.jpg");
 	LoadTexture(modeltexture, "Umbreon.jpg");
-	LoadTexture(bumptexture, "bump.jpg");
+	//LoadTexture(bumptexture, "bump.jpg");
 }
 
 glm::mat4 getV()
@@ -127,7 +127,8 @@ glm::mat4 getP()
 
 void display() {
 	//Clear the buffer
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	//glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClearColor(0.1f, 0.2f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glClearDepth(1.0f);
 	glEnable(GL_DEPTH_TEST);
@@ -205,14 +206,24 @@ void keyboard(unsigned char key, int x, int y) {
 		WorldCamPos += Right;
 		break;
 	}
+	case 'w':
+	{
+		WorldCamPos += glm::vec3(0,0.1,0);
+		break;
+	}
 	case 's':
+	{
+		WorldCamPos += glm::vec3(0, -0.1, 0);
+		break;
+	}
+	case 'z':
 	{
 		glm::vec3 Zoomin = -WorldCamPos;
 		Zoomin = glm::normalize(Zoomin);
 		WorldCamPos += Zoomin;
 		break;
 	}
-	case 'w':
+	case 'x':
 	{
 		glm::vec3 Zoomout = WorldCamPos;
 		Zoomout = glm::normalize(Zoomout);
@@ -224,10 +235,6 @@ void keyboard(unsigned char key, int x, int y) {
 		//WorldCamPos = glm::vec3(7.5 , 5.0, 7.5);
 		time_counter = 0.1f;
 		break;
-	}
-	case 'z':
-	{
-		rotation = rotation==TRUE?FALSE:TRUE;
 	}
 	default:
 	{
@@ -331,8 +338,8 @@ void DrawBall() {
 		glRotatef(angle_ball, 0, 0, 1);
 	}
 	else {
-		glTranslatef(1.0f - 4 + time_counter * 0.1, 0.0f, 0.0f);
-		glRotatef(-angle_ball, 0, 0, 1);
+		glTranslatef(1.0f - 4 + time_counter * 0.1f, 0.0f, 0.0f);
+		glRotatef(-angle_ball*2, 0, 0, 1);
 	}
 
 	glActiveTexture(GL_TEXTURE0);

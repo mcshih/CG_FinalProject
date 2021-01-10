@@ -15,7 +15,7 @@ out vec4 color;
 void triangle(int index)
 {
     float timer = tc;
-    vec4 drop = vec4(gs_in[index].normal.x, gs_in[index].normal.y-falling, gs_in[index].normal.z, 0.0f) * 0.5;
+    vec4 drop = vec4(gs_in[index].normal, 0.0f) * 0.25 + vec4(0.0f,-falling,0.0f,0.0f);
     if(falling != 0){
         drop *= falling;
         timer = 3.1425;
